@@ -1287,6 +1287,12 @@ func (r *Fetch) Group_UsedAsPollDefaultID(groupID int) *ValueMaybeInt {
 	return v
 }
 
+func (r *Fetch) Group_UsedAsTopicPollDefaultID(groupID int) *ValueMaybeInt {
+	v := &ValueMaybeInt{fetch: r, collection: "group", id: groupID, field: "used_as_topic_poll_default_id"}
+	r.requested[dskey.Key{Collection: "group", ID: groupID, Field: "used_as_topic_poll_default_id"}] = v
+	return v
+}
+
 func (r *Fetch) Group_UserIDs(groupID int) *ValueIntSlice {
 	v := &ValueIntSlice{fetch: r, collection: "group", id: groupID, field: "user_ids"}
 	r.requested[dskey.Key{Collection: "group", ID: groupID, Field: "user_ids"}] = v
@@ -1917,6 +1923,12 @@ func (r *Fetch) Meeting_JitsiRoomPassword(meetingID int) *ValueString {
 	return v
 }
 
+func (r *Fetch) Meeting_Language(meetingID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "meeting", id: meetingID, field: "language"}
+	r.requested[dskey.Key{Collection: "meeting", ID: meetingID, Field: "language"}] = v
+	return v
+}
+
 func (r *Fetch) Meeting_ListOfSpeakersAmountLastOnProjector(meetingID int) *ValueInt {
 	v := &ValueInt{fetch: r, collection: "meeting", id: meetingID, field: "list_of_speakers_amount_last_on_projector"}
 	r.requested[dskey.Key{Collection: "meeting", ID: meetingID, Field: "list_of_speakers_amount_last_on_projector"}] = v
@@ -2490,6 +2502,12 @@ func (r *Fetch) Meeting_TemplateForOrganizationID(meetingID int) *ValueMaybeInt 
 func (r *Fetch) Meeting_TopicIDs(meetingID int) *ValueIntSlice {
 	v := &ValueIntSlice{fetch: r, collection: "meeting", id: meetingID, field: "topic_ids"}
 	r.requested[dskey.Key{Collection: "meeting", ID: meetingID, Field: "topic_ids"}] = v
+	return v
+}
+
+func (r *Fetch) Meeting_TopicPollDefaultGroupIDs(meetingID int) *ValueIntSlice {
+	v := &ValueIntSlice{fetch: r, collection: "meeting", id: meetingID, field: "topic_poll_default_group_ids"}
+	r.requested[dskey.Key{Collection: "meeting", ID: meetingID, Field: "topic_poll_default_group_ids"}] = v
 	return v
 }
 
@@ -3537,6 +3555,12 @@ func (r *Fetch) Organization_CommitteeIDs(organizationID int) *ValueIntSlice {
 	return v
 }
 
+func (r *Fetch) Organization_DefaultLanguage(organizationID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "organization", id: organizationID, field: "default_language", required: true}
+	r.requested[dskey.Key{Collection: "organization", ID: organizationID, Field: "default_language"}] = v
+	return v
+}
+
 func (r *Fetch) Organization_Description(organizationID int) *ValueString {
 	v := &ValueString{fetch: r, collection: "organization", id: organizationID, field: "description"}
 	r.requested[dskey.Key{Collection: "organization", ID: organizationID, Field: "description"}] = v
@@ -4347,6 +4371,12 @@ func (r *Fetch) Tag_TaggedIDs(tagID int) *ValueStringSlice {
 	return v
 }
 
+func (r *Fetch) Theme_Abstain(themeID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "theme", id: themeID, field: "abstain"}
+	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "abstain"}] = v
+	return v
+}
+
 func (r *Fetch) Theme_Accent100(themeID int) *ValueString {
 	v := &ValueString{fetch: r, collection: "theme", id: themeID, field: "accent_100"}
 	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "accent_100"}] = v
@@ -4431,6 +4461,12 @@ func (r *Fetch) Theme_AccentA700(themeID int) *ValueString {
 	return v
 }
 
+func (r *Fetch) Theme_Headbar(themeID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "theme", id: themeID, field: "headbar"}
+	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "headbar"}] = v
+	return v
+}
+
 func (r *Fetch) Theme_ID(themeID int) *ValueInt {
 	v := &ValueInt{fetch: r, collection: "theme", id: themeID, field: "id", required: true}
 	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "id"}] = v
@@ -4440,6 +4476,12 @@ func (r *Fetch) Theme_ID(themeID int) *ValueInt {
 func (r *Fetch) Theme_Name(themeID int) *ValueString {
 	v := &ValueString{fetch: r, collection: "theme", id: themeID, field: "name", required: true}
 	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "name"}] = v
+	return v
+}
+
+func (r *Fetch) Theme_No(themeID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "theme", id: themeID, field: "no"}
+	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "no"}] = v
 	return v
 }
 
@@ -4620,6 +4662,12 @@ func (r *Fetch) Theme_WarnA400(themeID int) *ValueString {
 func (r *Fetch) Theme_WarnA700(themeID int) *ValueString {
 	v := &ValueString{fetch: r, collection: "theme", id: themeID, field: "warn_a700"}
 	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "warn_a700"}] = v
+	return v
+}
+
+func (r *Fetch) Theme_Yes(themeID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "theme", id: themeID, field: "yes"}
+	r.requested[dskey.Key{Collection: "theme", ID: themeID, Field: "yes"}] = v
 	return v
 }
 
@@ -4950,6 +4998,12 @@ func (r *Fetch) User_PollVotedIDs(userID int, meetingID int) *ValueIntSlice {
 func (r *Fetch) User_Pronoun(userID int) *ValueString {
 	v := &ValueString{fetch: r, collection: "user", id: userID, field: "pronoun"}
 	r.requested[dskey.Key{Collection: "user", ID: userID, Field: "pronoun"}] = v
+	return v
+}
+
+func (r *Fetch) User_SamlID(userID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "user", id: userID, field: "saml_id"}
+	r.requested[dskey.Key{Collection: "user", ID: userID, Field: "saml_id"}] = v
 	return v
 }
 
