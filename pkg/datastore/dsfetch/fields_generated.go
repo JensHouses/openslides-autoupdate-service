@@ -4875,6 +4875,18 @@ func (r *Fetch) User_ID(userID int) *ValueInt {
 	return v
 }
 
+func (r *Fetch) User_TechID(userID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "user", id: userID, field: "tech_id"}
+	r.requested[dskey.Key{Collection: "user", ID: userID, Field: "tech_id"}] = v
+	return v
+}
+
+func (r *Fetch) User_MemberID(userID int) *ValueString {
+	v := &ValueString{fetch: r, collection: "user", id: userID, field: "member_id"}
+	r.requested[dskey.Key{Collection: "user", ID: userID, Field: "member_id"}] = v
+	return v
+}
+
 func (r *Fetch) User_IsActive(userID int) *ValueBool {
 	v := &ValueBool{fetch: r, collection: "user", id: userID, field: "is_active"}
 	r.requested[dskey.Key{Collection: "user", ID: userID, Field: "is_active"}] = v
