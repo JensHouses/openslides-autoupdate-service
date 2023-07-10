@@ -33,20 +33,12 @@ const (
 	// client needs more time to process the data, it will get an error and has
 	// to reconnect. A higher value means, that more memory is used.
 	pruneTime = 10 * time.Minute
-
-	// cacheResetTime defines when the cache should be reseted.
-	//
-	// When the datastore runs for a long time, its cache grows bigger and more
-	// calculated keys have to be calculated. A reset means, that everything
-	// gets cleaned.
-	//
-	// A high value means more memory and cpu usage after some time. A lower
-	// value means more Requests to the Datastore Service and therefore a slower
-	// response time for the clients.
-	datastoreCacheResetTime = 24 * time.Hour
 )
 
-var envConcurentWorker = environment.NewVariable("CONCURENT_WORKER", "0", "Amount of clients that calculate there values at the same time. Default to GOMAXPROCS.")
+var (
+	envConcurentWorker = environment.NewVariable("CONCURENT_WORKER", "0", "Amount of clients that calculate there values at the same time. Default to GOMAXPROCS.")
+	envCacheReset      = environment.NewVariable("CACHE_RESET", "24h", "Time to reset the cache.")
+)
 
 // Datastore is the source for the data.
 type Datastore interface {
@@ -56,7 +48,7 @@ type Datastore interface {
 	ResetCache()
 	RegisterCalculatedField(
 		field string,
-		f func(ctx context.Context, key dskey.Key, changed map[dskey.Key][]byte) ([]byte, error),
+		f func(ctx context.Context, key dskey.Key, changed map[dskey.Key][]byte) ([]byte, bool, error),
 	)
 	HistoryInformation(ctx context.Context, fqid string, w io.Writer) error
 }
@@ -76,6 +68,8 @@ type Autoupdate struct {
 	topic      *topic.Topic[dskey.Key]
 	restricter RestrictMiddleware
 	pool       *workPool
+
+	cacheReset time.Duration
 }
 
 // New creates a new autoupdate service.
@@ -92,11 +86,17 @@ func New(lookup environment.Environmenter, ds Datastore, restricter RestrictMidd
 		workers = runtime.GOMAXPROCS(0)
 	}
 
+	cacheResetTime, err := environment.ParseDuration(envCacheReset.Value(lookup))
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid value for `CACHE_RESET`, expected duration got %s: %w", envCacheReset.Value(lookup), err)
+	}
+
 	a := &Autoupdate{
 		datastore:  ds,
 		topic:      topic.New[dskey.Key](),
 		restricter: restricter,
 		pool:       newWorkPool(workers),
+		cacheReset: cacheResetTime,
 	}
 
 	// Update the topic when an data update is received.
@@ -192,7 +192,7 @@ func (a *Autoupdate) pruneOldData(ctx context.Context) {
 // resetCache runs in the background and cleans the cache from time to time.
 // Blocks until the service is closed.
 func (a *Autoupdate) resetCache(ctx context.Context) {
-	tick := time.NewTicker(datastoreCacheResetTime)
+	tick := time.NewTicker(a.cacheReset)
 	defer tick.Stop()
 
 	for {
@@ -267,7 +267,7 @@ func (a *Autoupdate) HistoryInformation(ctx context.Context, uid int, fqid strin
 //
 // The return format is a map from fqid to an object as map from field to value.
 func (a *Autoupdate) RestrictFQIDs(ctx context.Context, userID int, fqids []string, requestedFields map[string][]string) (map[string]map[string][]byte, error) {
-	requestedFieldsMap := make(map[string]*set.Set[string], len(requestedFields))
+	requestedFieldsMap := make(map[string]set.Set[string], len(requestedFields))
 	for col, val := range requestedFields {
 		requestedFieldsMap[col] = set.New(val...)
 	}
@@ -347,6 +347,22 @@ func (a *Autoupdate) skipWorkpool(ctx context.Context, userID int) (bool, error)
 	}
 
 	return false, nil
+}
+
+// CanSeeConnectionCount returns, if the user can see the connection counter.
+func (a *Autoupdate) CanSeeConnectionCount(ctx context.Context, userID int) (bool, error) {
+	if userID == 0 {
+		return false, nil
+	}
+
+	ds := dsfetch.New(a.datastore)
+
+	hasOML, err := perm.HasOrganizationManagementLevel(ctx, ds, userID, perm.OMLCanManageOrganization)
+	if err != nil {
+		return false, fmt.Errorf("getting organization management level: %w", err)
+	}
+
+	return hasOML, nil
 }
 
 type permissionDeniedError struct {
