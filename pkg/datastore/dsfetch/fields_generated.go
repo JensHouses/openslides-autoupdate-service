@@ -7458,15 +7458,21 @@ func (r *Fetch) User_ID(userID int) *ValueInt {
 }
 
 func (r *Fetch) User_TechID(userID int) *ValueString {
-	v := &ValueString{fetch: r, collection: "user", id: userID, field: "tech_id"}
-	r.requested[dskey.Key{Collection: "user", ID: userID, Field: "tech_id"}] = v
-	return v
+	key, err := dskey.FromParts("user", userID, "tech_id")
+	if err != nil {
+		return &ValueString{err: err}
+	}
+
+	return &ValueString{fetch: r, key: key}
 }
 
 func (r *Fetch) User_MemberID(userID int) *ValueString {
-	v := &ValueString{fetch: r, collection: "user", id: userID, field: "member_id"}
-	r.requested[dskey.Key{Collection: "user", ID: userID, Field: "member_id"}] = v
-	return v
+	key, err := dskey.FromParts("user", userID, "member_id")
+	if err != nil {
+		return &ValueString{err: err}
+	}
+
+	return &ValueString{fetch: r, key: key}
 }
 
 func (r *Fetch) User_IsActive(userID int) *ValueBool {
